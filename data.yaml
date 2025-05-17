@@ -1,0 +1,13 @@
+train: ../data/train/images
+val: ../data/valid/images
+test: ../data/test/images
+
+nc: 5
+names: ['QR', 'barcode', 'date', 'expire_date', 'name']
+
+roboflow:
+  workspace: project-kiow3
+  project: kozhin-dev
+  version: 3
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/project-kiow3/kozhin-dev/dataset/3
