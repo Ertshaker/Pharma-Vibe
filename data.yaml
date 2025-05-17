@@ -1,4 +1,4 @@
-train: ../data/train/images
+train: ../data/newbie/images
 val: ../data/valid/images
 test: ../data/test/images
 
@@ -8,6 +8,6 @@ names: ['QR', 'barcode', 'date', 'expire_date', 'name']
 roboflow:
   workspace: project-kiow3
   project: kozhin-dev
-  version: 3
+  version: 4
   license: CC BY 4.0
-  url: https://universe.roboflow.com/project-kiow3/kozhin-dev/dataset/3
+  url: https://universe.roboflow.com/project-kiow3/kozhin-dev/dataset/4

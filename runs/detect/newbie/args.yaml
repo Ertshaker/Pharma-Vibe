@@ -13,7 +13,7 @@ cache: false
 device: cpu
 workers: 8
 project: null
-name: train3
+name: newbie
 exist_ok: false
 pretrained: true
 optimizer: auto
@@ -46,7 +46,7 @@ source: null
 vid_stride: 1
 stream_buffer: false
 visualize: false
-augment: true
+augment: false
 agnostic_nms: false
 classes: null
 retina_masks: false
@@ -72,7 +72,7 @@ nms: false
 lr0: 0.01
 lrf: 0.01
 momentum: 0.937
-weight_decay: 0.005
+weight_decay: 0.0005
 warmup_epochs: 3.0
 warmup_momentum: 0.8
 warmup_bias_lr: 0.1
@@ -85,11 +85,11 @@ nbs: 64
 hsv_h: 0.015
 hsv_s: 0.7
 hsv_v: 0.4
-degrees: 0.25
+degrees: 0.0
 translate: 0.1
-scale: 0.3
+scale: 0.5
 shear: 0.0
-perspective: 0.0001
+perspective: 0.0
 flipud: 0.0
 fliplr: 0.5
 bgr: 0.0
@@ -102,4 +102,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: C:\Users\maxim\PycharmProjects\Kozhin_with_IDEAq\runs\detect\train3
+save_dir: C:\Users\maxim\PycharmProjects\Kozhin_with_IDEAq\runs\detect\train
