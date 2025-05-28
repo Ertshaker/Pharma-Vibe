@@ -23,13 +23,14 @@ footer > * {
     background-image: linear-gradient(315deg, #7cfc00 0%, #0bda51 74%);
     border-radius: 48px;
     padding: 2rem;
+    min-width: 500px;
     max-width: 850px;
     margin: 2rem auto;
     box-shadow: 0 8px 20px rgba(0, 128, 128, 0.3);
 }
 
 .header > * {
-    color: #006064;
+    color: black;
     font-family: "Comfortaa", sans-serif;
     font-weight: 600;
     font-size: 48px;
@@ -47,11 +48,21 @@ footer > * {
     border: none !important;
 }
 
-.analyze_button, .clear_button {
+.analyze_button,  {
+    background-color: white
+    color: white;
+    font-weight: bold;
+    border-radius: 18px;
+    padding: 10px 18px;
+    transition: background 0.2s ease;
+    border: none;
+}
+
+.clear_button {
     background-color: white!important;
     color: white !important;
     font-weight: bold;
-    border-radius: 6px !important;
+    border-radius: 18px !important;
     padding: 10px 18px !important;
     transition: background 0.2s ease;
     border: none !important;
@@ -66,7 +77,7 @@ footer > * {
     border: 2px solid #b2ebf2;
     border-radius: 18px;
     background: #f0fcff;
-    border-radius: 6px;
+    border-radius: 18px;
     font-size: 24px;
     padding: 10px;
     color: #004d5a;
@@ -78,6 +89,9 @@ footer > * {
     border-radius: 18px;
     padding: 1rem;
     transition: background 0.3s ease;
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
 }
 
 .image_upload:hover {
@@ -90,6 +104,9 @@ footer > * {
     background: white;
     border-radius: 18px;
     padding: 5px;
+    width: 400px;
+    height: 400px;
+    object-fit: contain;
 }
 
 /* Анимация появления */
@@ -113,19 +130,21 @@ class_match = {
 model = YOLO("../runs/detect/legendary_final/weights/best.pt")
 reader = easyocr.Reader(["ru", "en"])
 
-founded_objects = {
-    4: None,
-    2: None,
-    0: None,
-    1: None
-}
-
-
 def process_images(image):
+    global founded_objects
+
+    founded_objects = {
+        4: None,
+        2: None,
+        0: None,
+        1: None
+    }
+
+    if image is None:
+        return ["Не найдено", "Не найдено", gr.Image("not_found.png"), gr.Image("not_found.png")]
+
     # порог уверенности??? можно иметь можно убрать ваще, я пока оставлю
     conf_threshold = 0.4
-    # хранит лучшие объекты класса, самые уверенные
-    best_objects = []
     text = ''
     for i, box in enumerate(model(image, conf=conf_threshold)[0].boxes):
         bbox = box.xyxy[0].cpu().numpy()
@@ -152,7 +171,7 @@ def process_images(image):
             founded_objects[cls_id] = cropped
 
         print(f"Объект {i + 1}:\n"
-              f"\tКласс: {[cls_id]}\n"
+              f"\tКласс: {class_match[cls_id]}\n"
               f"\tУверенность: {conf:.2f}\n"
               f"\tx1, y1: {x1}, {y1}\n"
               f"\tx2, y2: {x2}, {y2}\n"
@@ -175,6 +194,7 @@ def clear_outputs():
         0: None,
         1: None
     }
+
     return ["", "", None, None]
 
 
@@ -203,16 +223,16 @@ with gr.Blocks(css=css) as demo:
     with gr.Row():
         out_barcode = gr.Image(label="📎 Штрих‑код",
                                interactive=False,
-                               type="numpy")
+                               type="numpy", elem_classes=["gr-image"])
         out_qr = gr.Image(label="📱 QR‑код",
                           interactive=False,
-                          type="numpy", elem_classes=["output_field"])
+                          type="numpy", elem_classes=["gr-image"])
 
     btn_analyze.click(fn=process_images,
                       inputs=image_input,
                       outputs=[out_name, out_expiry, out_barcode, out_qr])
 
-    btn_clear.click(fn=process_images,
+    btn_clear.click(fn=clear_outputs,
                     inputs=[],
                     outputs=[out_name, out_expiry, out_barcode, out_qr])
 
