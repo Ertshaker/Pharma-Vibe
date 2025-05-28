@@ -28,8 +28,6 @@ footer > * {
     box-shadow: 0 8px 20px rgba(0, 128, 128, 0.3);
 }
 
-/* Заголовки */
-
 .header > * {
     color: #006064;
     font-family: "Comfortaa", sans-serif;
@@ -40,6 +38,16 @@ footer > * {
 
 /* Кнопки */
 .gr-button {
+    background-color: white!important;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 6px !important;
+    padding: 10px 18px !important;
+    transition: background 0.2s ease;
+    border: none !important;
+}
+
+.analyze_button, .clear_button {
     background-color: white!important;
     color: white !important;
     font-weight: bold;
@@ -128,7 +136,10 @@ def process_images(image):
         cropped = image[y1:y2, x1:x2]
 
         # cls_id = 3 должен сдохнуть в зоне, паразитический класс
-        if founded_objects[cls_id] is not None or cls_id == 3:
+        if cls_id == 3:
+            continue
+
+        if founded_objects[cls_id] is not None:
             continue
 
         x1, y1, x2, y2 = map(int, bbox)
