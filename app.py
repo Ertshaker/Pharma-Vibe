@@ -9,9 +9,9 @@ css = """
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
 
 body {
-    background-image:url("background.jpg");
+    background-image:url("prikol.jpg");
     font-family: "Comfortaa", sans-serif;
-    color: black;
+    color: white;
 }
 
 footer > * {
@@ -30,7 +30,6 @@ footer > * {
 }
 
 .header > * {
-    color: black;
     font-family: "Comfortaa", sans-serif;
     font-weight: 600;
     font-size: 48px;
@@ -59,7 +58,7 @@ footer > * {
 }
 
 .clear_button {
-    background-color: white!important;
+    background-color: red;
     color: white !important;
     font-weight: bold;
     border-radius: 18px !important;
@@ -72,11 +71,10 @@ footer > * {
     background-color: #00838f !important;
 }
 
-/* Интерактивные поля */
 .output_field {
     border: 2px solid #b2ebf2;
     border-radius: 18px;
-    background: #f0fcff;
+    background: white;
     border-radius: 18px;
     font-size: 24px;
     padding: 10px;
@@ -109,7 +107,6 @@ footer > * {
     object-fit: contain;
 }
 
-/* Анимация появления */
 .gradio-container, .gr-button, .gr-textbox, .gr-image {
     animation: fadeIn 0.5s ease;
 }
@@ -128,20 +125,37 @@ class_match = {
 }
 
 model = YOLO("../runs/detect/legendary_final/weights/best.pt")
-reader = easyocr.Reader(["ru", "en"])
+reader = easyocr.Reader(["ru"])
 
-def process_images(image):
-    global founded_objects
 
-    founded_objects = {
+class FoundedObjects:
+    objects = {
         4: None,
         2: None,
         0: None,
         1: None
     }
 
+    @staticmethod
+    def clear():
+        FoundedObjects.objects = {
+            4: None,
+            2: None,
+            0: None,
+            1: None
+        }
+        return [None, None, None, None, None]
+
+
+def process_images(image):
     if image is None:
-        return ["Не найдено", "Не найдено", gr.Image("not_found.png"), gr.Image("not_found.png")]
+        return [
+            FoundedObjects.objects[4] if FoundedObjects.objects[4] is not None else "Не найдено",
+            FoundedObjects.objects[2] if FoundedObjects.objects[2] is not None else "Не найдено",
+            FoundedObjects.objects[1] if FoundedObjects.objects[1] is not None else gr.Image("not_found.png"),
+            FoundedObjects.objects[0] if FoundedObjects.objects[0] is not None else gr.Image("not_found.png"),
+            None
+        ]
 
     # порог уверенности??? можно иметь можно убрать ваще, я пока оставлю
     conf_threshold = 0.4
@@ -158,17 +172,17 @@ def process_images(image):
         if cls_id == 3:
             continue
 
-        if founded_objects[cls_id] is not None:
+        if FoundedObjects.objects[cls_id] is not None:
             continue
 
         x1, y1, x2, y2 = map(int, bbox)
 
         if cls_id == 2 or cls_id == 4:
             text = "".join(reader.readtext(cropped, detail=0))
-            founded_objects[cls_id] = text
+            FoundedObjects.objects[cls_id] = text
 
         if cls_id == 0 or cls_id == 1:
-            founded_objects[cls_id] = cropped
+            FoundedObjects.objects[cls_id] = cropped
 
         print(f"Объект {i + 1}:\n"
               f"\tКласс: {class_match[cls_id]}\n"
@@ -180,22 +194,12 @@ def process_images(image):
         print("=" * 75)
 
     return [
-        founded_objects[4] if founded_objects[4] is not None else "Не найдено",
-        founded_objects[2] if founded_objects[2] is not None else "Не найдено",
-        founded_objects[1] if founded_objects[1] is not None else gr.Image("not_found.png"),
-        founded_objects[0] if founded_objects[0] is not None else gr.Image("not_found.png")
+        FoundedObjects.objects[4] if FoundedObjects.objects[4] is not None else "Не найдено",
+        FoundedObjects.objects[2] if FoundedObjects.objects[2] is not None else "Не найдено",
+        FoundedObjects.objects[1] if FoundedObjects.objects[1] is not None else gr.Image("not_found.png"),
+        FoundedObjects.objects[0] if FoundedObjects.objects[0] is not None else gr.Image("not_found.png"),
+        None
     ]
-
-
-def clear_outputs():
-    founded_objects = {
-        4: None,
-        2: None,
-        0: None,
-        1: None
-    }
-
-    return ["", "", None, None]
 
 
 with gr.Blocks(css=css) as demo:
@@ -212,7 +216,7 @@ with gr.Blocks(css=css) as demo:
         btn_clear = gr.Button("🗑 Очистить всё", elem_id="clear_button")
 
     with gr.Row():
-        out_name = gr.Textbox(label="📝 Название продукта",
+        out_name = gr.Textbox(label="📝 Наименование",
                               interactive=False,
                               elem_classes=["output_field"])
 
@@ -224,17 +228,16 @@ with gr.Blocks(css=css) as demo:
         out_barcode = gr.Image(label="📎 Штрих‑код",
                                interactive=False,
                                type="numpy", elem_classes=["gr-image"])
+
         out_qr = gr.Image(label="📱 QR‑код",
                           interactive=False,
                           type="numpy", elem_classes=["gr-image"])
 
     btn_analyze.click(fn=process_images,
-                      inputs=image_input,
-                      outputs=[out_name, out_expiry, out_barcode, out_qr])
+                      inputs=[image_input],
+                      outputs=[out_name, out_expiry, out_barcode, out_qr, image_input])
 
-    btn_clear.click(fn=clear_outputs,
-                    inputs=[],
-                    outputs=[out_name, out_expiry, out_barcode, out_qr])
+    btn_clear.click(fn=FoundedObjects.clear, outputs=[out_name, out_expiry, out_barcode, out_qr, image_input])
 
 if __name__ == "__main__":
     demo.launch()
