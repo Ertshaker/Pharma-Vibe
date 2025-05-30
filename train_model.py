@@ -4,12 +4,12 @@ from ultralytics import YOLO
 if __name__ == '__main__':
     freeze_support()
 
-    model = YOLO('yolov8n.pt')  # или 'yolov8s.pt' для меньшей модели
+    model = YOLO('yolov8n.pt')
     results = model.train(
         data='data.yaml',
-        epochs=45,  # количество эпох
-        batch=16,  # размер батча
-        imgsz=640,  # размер изображения
+        epochs=45,
+        batch=16,
+        imgsz=640,
         device=0,
         lr0=0.001,
         lrf=0.01,
